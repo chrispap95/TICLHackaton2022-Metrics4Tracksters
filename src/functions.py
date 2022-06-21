@@ -3,9 +3,9 @@ import awkward as ak
 import uproot
 
 def euclideanMatrix(vertices_x,vertices_y,vertices_z):
-    ver_x = ak.to_numpy(vertices_x[0,0])
-    ver_y = ak.to_numpy(vertices_y[0,0])
-    ver_z = ak.to_numpy(vertices_z[0,0])
+    ver_x = ak.to_numpy(vertices_x)
+    ver_y = ak.to_numpy(vertices_y)
+    ver_z = ak.to_numpy(vertices_z)
     #subtract.outer to compute difference in all combinations
     diff_x = np.subtract.outer(ver_x,ver_x)
     diff_y = np.subtract.outer(ver_y,ver_y)
