@@ -2,6 +2,19 @@ import numpy as np
 import awkward as ak
 import uproot
 
+def euclideanMatrix(vertices_x,vertices_y,vertices_z):
+    ver_x = ak.to_numpy(vertices_x[0,0])
+    ver_y = ak.to_numpy(vertices_y[0,0])
+    ver_z = ak.to_numpy(vertices_z[0,0])
+    #subtract.outer to compute difference in all combinations
+    diff_x = np.subtract.outer(ver_x,ver_x)
+    diff_y = np.subtract.outer(ver_y,ver_y)
+    diff_z = np.subtract.outer(ver_z,ver_z)
+    euclidean_matrix = np.sqrt(diff_x**2+diff_y**2+diff_z**2)
+    
+    return euclidean_matrix
+    
+
 def calcWeight(mode, cluster1, cluster2,n):
     E1 = cluster1.energy()
     E2 = cluster2.energy()
@@ -43,41 +56,44 @@ def adjM(nodes,edges,isDirected=False):
     maxVal=adj.max()
     return adj/maxVal
 
-def centralityEigen(adj):
+def centralityEigen(adj,printStuff=False):
     rows,columns= adj.shape
     eigvals,vecl= np.linalg.eig(adj)
-    print(eigvals)
     i=np.argmax(np.abs(eigvals)) 
     c_eig= vecl[:,i]
     if(c_eig[0]<0):
         c_eig *=-1
-    print(vecl)
+    if(printStuff):
+        print(eigvals)
+        print(vecl)
     norm=np.linalg.norm(c_eig)
     return c_eig/norm
 
-def centralityKatz(adj):
+def centralityKatz(adj,printStuff=False):
     rows,columns= adj.shape
     Id=np.identity(rows)
     eigvals,vecl= np.linalg.eig(adj)
-    print(eigvals)
     i=np.argmax(np.abs(eigvals)) 
     alpha= 0.9/eigvals[i]
-    c_katz=(np.linalg.inv(Id-alpha*adj.T)-Id)@np.ones((rows)).T
-    print(vecl)
+    c_katz=(np.linalg.inv(Id-alpha@adj.T)-Id)@np.ones((rows)).T
+    if(printStuff):
+        print(eigvals)
+        print(vecl)
     norm=np.linalg.norm(c_katz)
     return c_katz/norm
     
-def centralityPageRank(adj,df):
+def centralityPageRank(adj,df,printStuff=False):
     rows,columns= adj.shape
     m_ones=np.ones((rows,columns))
     m_pr=df*adj+(1-df)*m_ones/rows
     eigvals,vecl= np.linalg.eig(m_pr)
-    print(eigvals)
     i=np.argmax(np.abs(eigvals)) 
     c_pr= vecl[:,i]
     if(c_pr[0]<0):
         c_pr *=-1
-    print(vecl)
+    if(printStuff):
+        print(eigvals)
+        print(vecl)
     norm=np.linalg.norm(c_pr)
     return c_pr/norm
     
