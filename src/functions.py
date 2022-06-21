@@ -17,6 +17,7 @@ def euclideanMatrix(vertices_x,vertices_y,vertices_z):
 def edgeBuilderCyclEv(vertices_indexes):
     """
     Builds a cyclical graph for debugging purposes
+    input: array of vertices for all events & tracksters
     """
     edges = ak.ArrayBuilder()
     for v_event in vertices_indexes:
