@@ -13,7 +13,78 @@ def euclideanMatrix(vertices_x,vertices_y,vertices_z):
     euclidean_matrix = np.sqrt(diff_x**2+diff_y**2+diff_z**2)
     
     return euclidean_matrix
-    
+
+def edgeBuilderCyclEv(vertices_indexes):
+    edges = ak.ArrayBuilder()
+    for v_event in vertices_indexes:
+        edges.begin_list()
+        for v_trackster in v_event:
+            edges.begin_list()
+            for ind, v_node in enumerate(v_trackster):
+                edges.begin_tuple(2)
+                edges.index(0).integer(v_node)
+                if ind < len(v_trackster)-1:
+                    edges.index(1).integer(v_trackster[ind+1])
+                else:
+                    edges.index(1).integer(v_trackster[0])
+                edges.end_tuple()
+            edges.end_list()
+        edges.end_list()
+    return edges
+
+def edgeBuilderCyclTr(vertices_indexes):
+    edges = ak.ArrayBuilder()
+    for v_trackster in vertices_indexes:
+        edges.begin_list()
+        for idn, v_node in enumerate(v_trackster):
+            edges.begin_tuple(2)
+            edges.index(0).integer(v_node)
+            if idn < len(v_trackster)-1:
+                edges.index(1).integer(v_trackster[idn+1])
+            else:
+                edges.index(1).integer(v_trackster[0])
+            edges.end_tuple()
+        edges.end_list()
+    return edges
+
+def edgeBuilderNNEv(vertices_indexes, vertices_x, vertices_y, vertices_z, vertices_E):
+    edges = ak.ArrayBuilder()
+    for ide, v_event in enumerate(vertices_indexes):
+        edges.begin_list()
+        for idt, v_trackster in enumerate(v_event):
+            euMatr = euclideanMatrix(vertices_x[ide,idt],vertices_y[ide,idt],vertices_z[ide,idt])
+            edges.begin_list()
+            for idn, v_node in enumerate(v_trackster):
+                dist_array = euMatr[idn][vertices_E[ide,idt] > vertices_E[ide,idt,idn]]
+                if len(dist_array) == 0:
+                    continue
+                min_val = np.min(dist_array)
+                idx = np.where(euMatr[idn] == min_val)[0][0]
+                edges.begin_tuple(2)
+                edges.index(0).integer(v_node)
+                edges.index(1).integer(v_trackster[idx])
+                edges.end_tuple()
+            edges.end_list()
+        edges.end_list()
+    return edges
+
+def edgeBuilderNNTr(vertices_indexes, vertices_x, vertices_y, vertices_z, vertices_E):
+    edges = ak.ArrayBuilder()
+    for idt, v_trackster in enumerate(vertices_indexes):
+        euMatr = euclideanMatrix(vertices_x[idt],vertices_y[idt],vertices_z[idt])
+        edges.begin_list()
+        for idn, v_node in enumerate(v_trackster):
+            dist_array = euMatr[idn][vertices_E[idt] > vertices_E[idt,idn]]
+            if len(dist_array) == 0:
+                continue
+            min_val = np.min(dist_array)
+            idx = np.where(euMatr[idn] == min_val)[0][0]
+            edges.begin_tuple(2)
+            edges.index(0).integer(v_node)
+            edges.index(1).integer(v_trackster[idx])
+            edges.end_tuple()
+        edges.end_list()
+    return edges
 
 def calcWeight(mode, cluster1, cluster2,n):
     E1 = cluster1.energy()
