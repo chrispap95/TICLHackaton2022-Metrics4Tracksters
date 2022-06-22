@@ -1,6 +1,9 @@
 import numpy as np
 import awkward as ak
 import uproot
+from pylab import cm
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
 
 def euclideanMatrix(vertices_x,vertices_y,vertices_z):
     ver_x = ak.to_numpy(vertices_x)
@@ -172,3 +175,21 @@ def centralityPageRank(adj,df,printStuff=False):
     norm=np.linalg.norm(c_pr)
     return c_pr/norm
     
+
+def plotTrackster(vertices_x,vertices_y,vertices_z,vertices_E,plotOption='energy'):
+    
+    fig = plt.figure(figsize=(10,8))
+    ax = fig.add_subplot(projection='3d')
+    ax.set_xlabel('X Label')
+    ax.set_ylabel('Y Label')
+    ax.set_zlabel('Z Label')
+    colmap = cm.ScalarMappable(cmap=cm.viridis)
+    if(plotOption=='energy'):
+        colmap.set_array(vertices_E)
+        yg = ax.scatter(vertices_x, vertices_y, vertices_z, c=cm.viridis(vertices_E/max(vertices_E)), marker='o')
+        cb = fig.colorbar(colmap)
+        
+    if(plotOption=='position'):
+        yg =ax.scatter(vertices_x, vertices_y, vertices_z, marker='o')
+    
+    plt.show()
