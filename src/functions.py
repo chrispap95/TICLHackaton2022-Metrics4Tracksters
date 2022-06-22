@@ -125,8 +125,8 @@ def adjM(nodes,edges,isDirected=False):
         #cluster2=layerCluster(edge[1])
         #weight=calcWeight(wtMode,cluster1,cluster2,1)
         weight=1
-        idx0=np.where(nodes==edge[0])
-        idx1=np.where(nodes==edge[1])
+        idx0=np.where(nodes==edge.to_list()[0])
+        idx1=np.where(nodes==edge.to_list()[1])
         adj[idx0,idx1] = weight
         if(not isDirected):
             adj[idx1,idx0] = weight
@@ -174,17 +174,16 @@ def centralityPageRank(adj,df,printStuff=False):
     norm=np.linalg.norm(c_pr)
     return c_pr/norm
     
-
-def plotTrackster(fig,ax,vertices_x,vertices_y,vertices_z,vertices_E,plotOption='energy'):
+def plotTrackster(fig,ax,vertices_x,vertices_y,vertices_z,heatmapVals,plotOption='heatmap'):
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
-    colmap = cm.ScalarMappable(cmap=cm.viridis)
-    if(plotOption=='energy'):
-        colmap.set_array(vertices_E)
-        yg = ax.scatter(vertices_x, vertices_y, vertices_z, c=cm.viridis(vertices_E/max(vertices_E)), marker='o')
+    if(plotOption=='heatmap'):
+        colmap = cm.ScalarMappable(cmap=cm.viridis)
+        colmap.set_array(heatmapVals)
+        yg = ax.scatter(vertices_x, vertices_y, vertices_z, c=cm.viridis(heatmapVals/max(heatmapVals)), marker='o')
         cb = fig.colorbar(colmap)
-        
+
     if(plotOption=='position'):
         yg =ax.scatter(vertices_x, vertices_y, vertices_z, marker='o')
     
