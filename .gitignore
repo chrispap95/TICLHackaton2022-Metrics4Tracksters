@@ -1,0 +1,4 @@
+*.root
+.ipynb_checkpoints/
+ticlenv/
+src/__pycache__/
