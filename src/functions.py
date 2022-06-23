@@ -193,6 +193,24 @@ def nXCentralityKatz(nodes,edges):
     centr_d = nx.katz_centrality_numpy(G)
     centr_np = np.array(list(centr_d.items()))
     return centr_np[centr_np[:, 0].argsort()][:,1]
+
+def longestPathSource(nodes,edges,centralities):
+    """
+    Finds the longest path in the network from the max
+    of the stortest path algorithm.
+    """
+    G=nx.Graph()
+    G.add_edges_from(ak.to_numpy(edges))
+    G.add_nodes_from(ak.to_numpy(nodes))
+    
+    #Highest centrality node
+    i_centralityMax=np.argmax(centralities)
+    source=nodes[i_centralityMax]
+    #Finds the shortest path from the highest centrality to all other nodes
+    pathList=nx.shortest_path_length(G,source=source)
+    #Takes the max of all paths to find the longest path
+    longestShortestPath=max(pathList.values())
+    return longestShortestPath
     
 def plotTrackster(fig, ax, x, y, z, heatmap=None, indexes=None, edges=None, label='Vertex Energy (GeV)'):
     ax.set_xlabel('X (cm)')
