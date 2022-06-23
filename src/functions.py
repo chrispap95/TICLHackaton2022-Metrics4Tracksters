@@ -154,7 +154,7 @@ def centralityKatz(adj,printStuff=False):
     eigvals,vecl= np.linalg.eig(adj)
     i=np.argmax(np.abs(eigvals)) 
     alpha= 0.9/eigvals[i]
-    c_katz=(np.linalg.inv(Id-alpha@adj.T)-Id)@np.ones((rows)).T
+    c_katz=(np.linalg.inv(Id-alpha*adj.T)-Id)@np.ones((rows)).T
     if(printStuff):
         print(eigvals)
         print(vecl)
@@ -182,13 +182,17 @@ def nXCentralityEigen(nodes,edges):
     G=nx.Graph()
     G.add_edges_from(ak.to_numpy(edges))
     G.add_nodes_from(ak.to_numpy(nodes))
-    return nx.eigenvector_centrality_numpy(G)
+    centr_d = nx.eigenvector_centrality_numpy(G)
+    centr_np = np.array(list(centr_d.items()))
+    return centr_np[centr_np[:, 0].argsort()][:,1]
 
 def nXCentralityKatz(nodes,edges):
     G=nx.Graph()
     G.add_edges_from(ak.to_numpy(edges))
     G.add_nodes_from(ak.to_numpy(nodes))
-    return nx.katz_centrality_numpy(G)
+    centr_d = nx.katz_centrality_numpy(G)
+    centr_np = np.array(list(centr_d.items()))
+    return centr_np[centr_np[:, 0].argsort()][:,1]
     
 def plotTrackster(fig, ax, x, y, z, heatmap=None, indexes=None, edges=None, label='Vertex Energy (GeV)'):
     ax.set_xlabel('X (cm)')
