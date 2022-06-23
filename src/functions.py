@@ -174,17 +174,25 @@ def centralityPageRank(adj,df,printStuff=False):
     norm=np.linalg.norm(c_pr)
     return c_pr/norm
     
-def plotTrackster(fig,ax,vertices_x,vertices_y,vertices_z,heatmapVals,plotOption='heatmap'):
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-    if(plotOption=='heatmap'):
-        colmap = cm.ScalarMappable(cmap=cm.viridis)
-        colmap.set_array(heatmapVals)
-        yg = ax.scatter(vertices_x, vertices_y, vertices_z, c=cm.viridis(heatmapVals/max(heatmapVals)), marker='o')
-        cb = fig.colorbar(colmap)
-
-    if(plotOption=='position'):
-        yg =ax.scatter(vertices_x, vertices_y, vertices_z, marker='o')
-    
+def plotTrackster(fig, ax, x, y, z, heatmap=None, indexes=None, edges=None, label='Vertex Energy (GeV)'):
+    ax.set_xlabel('X (cm)')
+    ax.set_ylabel('Y (cm)')
+    ax.set_zlabel('Z (cm)')
+    colmap = cm.ScalarMappable(cmap=cm.viridis)
+    if len(heatmap) > 0 :
+        colmap.set_array(heatmap)
+        yg = ax.scatter(x, y, z, c=cm.viridis(heatmap/max(heatmap)), marker='o')
+        cb = fig.colorbar(colmap,label=label)
+    else:
+        yg =ax.scatter(x, y, z, marker='o')     
+    if len(heatmap) > 0:
+        for ied in edges:
+            idx0 = ak.where(indexes == ied.to_list()[0])[0][0]
+            idx1 = ak.where(indexes == ied.to_list()[1])[0][0]
+            ax.plot(
+                [x[idx0] ,x[idx1]],
+                [y[idx0] ,y[idx1]],
+                [z[idx0] ,z[idx1]],
+                'black'
+            )
     plt.show()
