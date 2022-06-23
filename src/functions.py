@@ -3,6 +3,7 @@ import awkward as ak
 import uproot
 from pylab import cm
 import matplotlib.pyplot as plt
+import networkx as nx
 
 def euclideanMatrix(vertices_x,vertices_y,vertices_z):
     ver_x = ak.to_numpy(vertices_x)
@@ -143,8 +144,9 @@ def centralityEigen(adj,printStuff=False):
     if(printStuff):
         print(eigvals)
         print(vecl)
-    norm=np.linalg.norm(c_eig)
-    return c_eig/norm
+    c_eig_real=c_eig.real
+    norm=np.linalg.norm(c_eig_real)
+    return c_eig_real/norm
 
 def centralityKatz(adj,printStuff=False):
     rows,columns= adj.shape
@@ -156,8 +158,9 @@ def centralityKatz(adj,printStuff=False):
     if(printStuff):
         print(eigvals)
         print(vecl)
-    norm=np.linalg.norm(c_katz)
-    return c_katz/norm
+    c_katz_real=c_katz.real
+    norm=np.linalg.norm(c_katz_real)
+    return c_katz_real/norm
     
 def centralityPageRank(adj,df,printStuff=False):
     rows,columns= adj.shape
@@ -171,10 +174,23 @@ def centralityPageRank(adj,df,printStuff=False):
     if(printStuff):
         print(eigvals)
         print(vecl)
-    norm=np.linalg.norm(c_pr)
-    return c_pr/norm
+    c_pr_real=c_pr.real
+    norm=np.linalg.norm(c_pr_real)
+    return c_pr_real/norm
+
+def nXCentralityEigen(nodes,edges):
+    G=nx.Graph()
+    G.add_edges_from(ak.to_numpy(edges))
+    G.add_nodes_from(ak.to_numpy(nodes))
+    return nx.eigenvector_centrality_numpy(G)
+
+def nXCentralityKatz(nodes,edges):
+    G=nx.Graph()
+    G.add_edges_from(ak.to_numpy(edges))
+    G.add_nodes_from(ak.to_numpy(nodes))
+    return nx.katz_centrality_numpy(G)
     
-def plotTrackster(fig,ax,vertices_x,vertices_y,vertices_z,heatmapVals,plotOption='heatmap'):
+def plotTrackster(fig,ax,vertices_x,vertices_y,vertices_z,heatmapVals,plotOption='heatmap',heatmapLabel='None'):
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
     ax.set_zlabel('Z Label')
@@ -182,7 +198,9 @@ def plotTrackster(fig,ax,vertices_x,vertices_y,vertices_z,heatmapVals,plotOption
         colmap = cm.ScalarMappable(cmap=cm.viridis)
         colmap.set_array(heatmapVals)
         yg = ax.scatter(vertices_x, vertices_y, vertices_z, c=cm.viridis(heatmapVals/max(heatmapVals)), marker='o')
-        cb = fig.colorbar(colmap)
+        if(heatmapLabel=='None'):
+            cb = fig.colorbar(colmap)
+        cb = fig.colorbar(colmap,label=heatmapLabel)
 
     if(plotOption=='position'):
         yg =ax.scatter(vertices_x, vertices_y, vertices_z, marker='o')
