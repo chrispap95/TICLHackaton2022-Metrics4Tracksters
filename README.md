@@ -33,3 +33,7 @@ source jupy.sh 8XXX
 ```
 To connect, open your browser and connect to the address given by the script.
 You should create a new notebook with kernel `ticlenv`.
+
+## About the content
+The notebooks show the progress made in chronological order according to the number in their name.
+All the "finished" code was added to `src/functions.py`.
