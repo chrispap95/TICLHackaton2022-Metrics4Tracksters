@@ -4,6 +4,82 @@ import uproot
 from pylab import cm
 import matplotlib.pyplot as plt
 import networkx as nx
+from numba import jit, njit
+
+
+@jit
+def edgeBuilderNewJIT(vertices_indexes, vertices_x, vertices_y, vertices_z, vertices_E, nEdg=1):
+    if len(vertices_indexes) <= nEdg:
+        raise ValueError("Number of attempted connections 'nEdg' cannot exceed the size of the graph")
+    # Create matrix of indexes
+    indexes = np.stack([ak.to_numpy(vertices_indexes)]*len(vertices_indexes),axis=0)
+    # Perform energy filtering. Keep only nodes that have greater energy that the specified node
+    enMtrx = np.stack([ak.to_numpy(vertices_E)]*len(vertices_E),axis=0)
+    energyMask = enMtrx > np.transpose(enMtrx)
+    # Calculate euclidean distance between all nodes and apply energy mask
+    distMatr = fn.euclideanMatrix(vertices_x, vertices_y, vertices_z)
+    # Sort each row and keep the indexes of the sorted arrays
+    distSort = np.argsort(distMatr,axis=1)
+    # Sort the euclidean distance using the indexes from previous step
+    distMatrSorted = distMatr[np.arange(distMatr.shape[0])[:,None], distSort]
+    energyMaskSorted = energyMask[np.arange(energyMask.shape[0])[:,None], distSort]
+    indexesSorted = indexes[np.arange(energyMask.shape[0])[:,None], distSort]
+    # Some awkward magic - converts innermost array length from const to var
+    indexesSorted = ak.unflatten(ak.flatten(indexesSorted), ak.num(indexesSorted))
+    energyMaskSorted = ak.unflatten(ak.flatten(energyMaskSorted), ak.num(energyMaskSorted))
+    # Filter nodes that have lower energy and keep nEdg nearest neighbors
+    indexesSorted = indexesSorted[energyMaskSorted]
+    indexesSorted = indexesSorted[:,:nEdg]
+    return ak.cartesian([vertices_indexes, indexesSorted])
+
+@njit
+def edgeBuilderNewNJIT(vertices_indexes, vertices_x, vertices_y, vertices_z, vertices_E, nEdg=1):
+    if len(vertices_indexes) <= nEdg:
+        raise ValueError("Number of attempted connections 'nEdg' cannot exceed the size of the graph")
+    # Create matrix of indexes
+    indexes = np.stack([ak.to_numpy(vertices_indexes)]*len(vertices_indexes),axis=0)
+    # Perform energy filtering. Keep only nodes that have greater energy that the specified node
+    enMtrx = np.stack([ak.to_numpy(vertices_E)]*len(vertices_E),axis=0)
+    energyMask = enMtrx > np.transpose(enMtrx)
+    # Calculate euclidean distance between all nodes and apply energy mask
+    distMatr = fn.euclideanMatrix(vertices_x, vertices_y, vertices_z)
+    # Sort each row and keep the indexes of the sorted arrays
+    distSort = np.argsort(distMatr,axis=1)
+    # Sort the euclidean distance using the indexes from previous step
+    distMatrSorted = distMatr[np.arange(distMatr.shape[0])[:,None], distSort]
+    energyMaskSorted = energyMask[np.arange(energyMask.shape[0])[:,None], distSort]
+    indexesSorted = indexes[np.arange(energyMask.shape[0])[:,None], distSort]
+    # Some awkward magic - converts innermost array length from const to var
+    indexesSorted = ak.unflatten(ak.flatten(indexesSorted), ak.num(indexesSorted))
+    energyMaskSorted = ak.unflatten(ak.flatten(energyMaskSorted), ak.num(energyMaskSorted))
+    # Filter nodes that have lower energy and keep nEdg nearest neighbors
+    indexesSorted = indexesSorted[energyMaskSorted]
+    indexesSorted = indexesSorted[:,:nEdg]
+    return ak.cartesian([vertices_indexes, indexesSorted])
+
+def edgeBuilderNew(vertices_indexes, vertices_x, vertices_y, vertices_z, vertices_E, nEdg=1):
+    if len(vertices_indexes) <= nEdg:
+        raise ValueError("Number of attempted connections 'nEdg' cannot exceed the size of the graph")
+    # Create matrix of indexes
+    indexes = np.stack([ak.to_numpy(vertices_indexes)]*len(vertices_indexes),axis=0)
+    # Perform energy filtering. Keep only nodes that have greater energy that the specified node
+    enMtrx = np.stack([ak.to_numpy(vertices_E)]*len(vertices_E),axis=0)
+    energyMask = enMtrx > np.transpose(enMtrx)
+    # Calculate euclidean distance between all nodes and apply energy mask
+    distMatr = fn.euclideanMatrix(vertices_x, vertices_y, vertices_z)
+    # Sort each row and keep the indexes of the sorted arrays
+    distSort = np.argsort(distMatr,axis=1)
+    # Sort the euclidean distance using the indexes from previous step
+    distMatrSorted = distMatr[np.arange(distMatr.shape[0])[:,None], distSort]
+    energyMaskSorted = energyMask[np.arange(energyMask.shape[0])[:,None], distSort]
+    indexesSorted = indexes[np.arange(energyMask.shape[0])[:,None], distSort]
+    # Some awkward magic - converts innermost array length from const to var
+    indexesSorted = ak.unflatten(ak.flatten(indexesSorted), ak.num(indexesSorted))
+    energyMaskSorted = ak.unflatten(ak.flatten(energyMaskSorted), ak.num(energyMaskSorted))
+    # Filter nodes that have lower energy and keep nEdg nearest neighbors
+    indexesSorted = indexesSorted[energyMaskSorted]
+    indexesSorted = indexesSorted[:,:nEdg]
+    return ak.cartesian([vertices_indexes, indexesSorted])
 
 def euclideanMatrix(vertices_x,vertices_y,vertices_z):
     ver_x = ak.to_numpy(vertices_x)
