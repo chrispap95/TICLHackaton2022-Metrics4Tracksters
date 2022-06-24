@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 import networkx as nx
 
 def edgeBuilderNew(vertices_indexes, vertices_x, vertices_y, vertices_z, vertices_E, nEdg=1):
-    if len(vertices_indexes) <= nEdg:
-        raise ValueError("Number of attempted connections 'nEdg' cannot exceed the size of the graph")
+    # Remove that exception for the moment. Not sure if needed.
+    #if len(vertices_indexes) <= nEdg:
+    #    raise ValueError("Number of attempted connections 'nEdg' cannot exceed the size of the graph")
     # Create matrix of indexes
     indexes = np.stack([ak.to_numpy(vertices_indexes)]*len(vertices_indexes),axis=0)
     # Perform energy filtering. Keep only nodes that have greater energy that the specified node
