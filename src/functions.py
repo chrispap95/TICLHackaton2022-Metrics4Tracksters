@@ -158,72 +158,84 @@ def adjM(nodes,edges,isDirected=False):
     maxVal=adj.max()
     return adj/maxVal
 
-def centralityEigen(adj,printStuff=False):
+def centralityEigen(nodes,edges,isDirected=False,printStuff=False):
+    adj=adjM(nodes,edges,isDirected)
     rows,columns= adj.shape
-    eigvals,vecl= np.linalg.eig(adj)
+    eigvals,vecr= np.linalg.eig(adj)
     i=np.argmax(np.abs(eigvals)) 
-    c_eig= vecl[:,i]
+    c_eig= vecr[:,i]
     if(c_eig[0]<0):
         c_eig *=-1
     if(printStuff):
         print(eigvals)
-        print(vecl)
+        print(vecr)
     c_eig_real=c_eig.real
     norm=np.linalg.norm(c_eig_real)
     return c_eig_real/norm
 
-def centralityKatz(adj,printStuff=False):
+def centralityKatz(nodes,edges,isDirected=False,printStuff=False):
+    adj=adjM(nodes,edges,isDirected)
     rows,columns= adj.shape
     Id=np.identity(rows)
-    eigvals,vecl= np.linalg.eig(adj)
+    eigvals,vecr= np.linalg.eig(adj)
     i=np.argmax(np.abs(eigvals)) 
     alpha= 0.9/eigvals[i]
     c_katz=(np.linalg.inv(Id-alpha*adj.T)-Id)@np.ones((rows)).T
     if(printStuff):
         print(eigvals)
-        print(vecl)
+        print(vecr)
     c_katz_real=c_katz.real
     norm=np.linalg.norm(c_katz_real)
     return c_katz_real/norm
     
-def centralityPageRank(adj,df,printStuff=False):
+def centralityPageRank(nodes,edges,df,isDirected=False,printStuff=False):
+    adj=adjM(nodes,edges,isDirected)
     rows,columns= adj.shape
     m_ones=np.ones((rows,columns))
     m_pr=df*adj+(1-df)*m_ones/rows
-    eigvals,vecl= np.linalg.eig(m_pr)
+    eigvals,vecr= np.linalg.eig(m_pr)
     i=np.argmax(np.abs(eigvals)) 
-    c_pr= vecl[:,i]
+    c_pr= vecr[:,i]
     if(c_pr[0]<0):
         c_pr *=-1
     if(printStuff):
         print(eigvals)
-        print(vecl)
+        print(vecr)
     c_pr_real=c_pr.real
     norm=np.linalg.norm(c_pr_real)
     return c_pr_real/norm
 
-def nXCentralityEigen(nodes,edges):
-    G=nx.Graph()
+def nXCentralityEigen(nodes,edges,isDirected=False):
+    if(isDirected):
+        G=nx.DiGraph()
+    else:
+        G=nx.Graph()
     G.add_edges_from(ak.to_numpy(edges))
     G.add_nodes_from(ak.to_numpy(nodes))
     centr_d = nx.eigenvector_centrality_numpy(G)
     centr_np = np.array(list(centr_d.items()))
     return centr_np[centr_np[:, 0].argsort()][:,1]
 
-def nXCentralityKatz(nodes,edges):
-    G=nx.Graph()
+def nXCentralityKatz(nodes,edges,isDirected=False):
+    if(isDirected):
+        G=nx.DiGraph()
+    else:
+        G=nx.Graph()
     G.add_edges_from(ak.to_numpy(edges))
     G.add_nodes_from(ak.to_numpy(nodes))
     centr_d = nx.katz_centrality_numpy(G)
     centr_np = np.array(list(centr_d.items()))
     return centr_np[centr_np[:, 0].argsort()][:,1]
 
-def longestPathSource(nodes,edges,centralities):
+def longestPathSource(nodes,edges,centralities,isDirected=False):
     """
     Finds the longest path in the network from the max
     of the stortest path algorithm.
     """
-    G=nx.Graph()
+    if(isDirected):
+        G=nx.DiGraph()
+    else:
+        G=nx.Graph()
     G.add_edges_from(ak.to_numpy(edges))
     G.add_nodes_from(ak.to_numpy(nodes))
     
@@ -246,7 +258,8 @@ def plotTrackster(fig, ax, x, y, z, heatmap=None, indexes=None, edges=None, labe
         yg = ax.scatter(x, y, z, c=cm.viridis(heatmap/max(heatmap)), marker='o', linewidth=2)
         cb = fig.colorbar(colmap,label=label)
     else:
-        yg =ax.scatter(x, y, z, marker='o')     
+        yg =ax.scatter(x, y, z, marker='o') 
+    edges=ak.to_numpy(edges)
     if len(heatmap) > 0:
         for ind in edges:
             if len(ind) == 0:
