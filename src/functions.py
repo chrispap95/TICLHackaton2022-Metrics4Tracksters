@@ -247,7 +247,26 @@ def longestPathSource(nodes,edges,centralities,isDirected=False):
     #Takes the max of all paths to find the longest path
     longestShortestPath=max(pathList.values())
     return longestShortestPath
+
+def longestPathInitialNode(nodes,edges,isDirected=False):
+    """
+    Finds the longest path in the network from the max
+    of the stortest path algorithm.
+    """
+    if(isDirected):
+        G=nx.DiGraph()
+    else:
+        G=nx.Graph()
+    G.add_edges_from(ak.to_numpy(edges))
+    G.add_nodes_from(ak.to_numpy(nodes))
     
+    source=nodes[0]
+    #Finds the shortest path from the first node to all other nodes
+    pathList=nx.shortest_path_length(G,source=source)
+    #Takes the max of all paths to find the longest path
+    longestShortestPath=max(pathList.values())
+    return longestShortestPath
+
 def plotTrackster(fig, ax, x, y, z, heatmap=None, indexes=None, edges=None, label='Vertex Energy (GeV)'):
     ax.set_xlabel('X (cm)')
     ax.set_ylabel('Y (cm)')
@@ -274,3 +293,90 @@ def plotTrackster(fig, ax, x, y, z, heatmap=None, indexes=None, edges=None, labe
                     'black'
                 )
     plt.show()
+
+
+def incompleteTracksters2(vertices_layer,seed1=None,seed2=None):
+    v_layer=ak.to_numpy(vertices_layer)
+    n=len(vertices_layer)
+    #print(n)
+    if(seed1!=None):
+        np.random.seed(seed1)
+    q1=np.random.normal(0.18,0.02)
+    if(seed2!=None):
+        np.random.seed(seed2)
+    q2=np.random.normal(0.18,0.02)
+    return slice(int(n*q1),int(n*(1-q2)))
+
+def ld(vertices_z,vertices_E):
+    if(vertices_z[0]<0):
+        offset=320
+    else:
+        offset=-320
+    
+    ldVal=sum((vertices_z+offset)*vertices_E)
+    return ldVal
+
+def delta_RT(vertices_x,vertices_y,vertices_E,Eweighted=False):
+    argmax_E=ak.argmax(vertices_E)
+                       
+    vEmax_x=vertices_x[argmax_E]
+    vEmax_y=vertices_y[argmax_E]
+    RvEmax=np.sqrt(vEmax_x**2+vEmax_y**2)
+    
+    R=np.sqrt(vertices_x**2+vertices_y**2)
+    
+    if(Eweighted):
+        delta_R=sum((R-RvEmax)**2*vertices_E/vertices_E[argmax_E])
+    else:
+        delta_R=sum((R-RvEmax)**2)
+        
+    return delta_R
+
+def delta_R(vertices_x,vertices_y,vertices_z,vertices_E,Eweighted=False):
+    argmax_E=ak.argmax(vertices_E)
+                       
+    vEmax_x=vertices_x[argmax_E]
+    vEmax_y=vertices_y[argmax_E]
+    vEmax_z=vertices_z[argmax_E]
+    RvEmax=np.sqrt(vEmax_x**2+vEmax_y**2+vEmax_z**2)
+    
+    R=np.sqrt(vertices_x**2+vertices_y**2+vertices_z**2)
+    
+    delta_R=sum((R-RvEmax)**2)
+        
+    return delta_R
+
+def delta_RT_std(vertices_x,vertices_y,vertices_E,Eweighted=False):
+    argmax_E=ak.argmax(vertices_E)
+                       
+    vEmax_x=vertices_x[argmax_E]
+    vEmax_y=vertices_y[argmax_E]
+    RvEmax=np.sqrt(vEmax_x**2+vEmax_y**2)
+    
+    R=np.sqrt((vertices_x-vEmax_x)**2+(vertices_y-vEmax_y)**2)
+
+    delta_R_std=np.sqrt(np.abs(sum(R**2)-sum(R)**2))
+        
+    return delta_R_std
+                       
+def maxE_z(vertices_z,vertices_E):
+    argmax_E=ak.argmax(vertices_E)
+    if(vertices_z[0]<0):
+        maxE_z=-1*(vertices_z[argmax_E]+320)
+    else:
+        maxE_z=(vertices_z[argmax_E]-320)
+    return maxE_z
+    
+def sd(vertices_z,vertices_E):
+    ldVal=ld(vertices_z,vertices_E)
+    E_tot=ak.sum(vertices_E)
+    return ldVal/E_tot
+
+def maxAbsZ(vertices_z):
+    if(vertices_z[0]<0):
+        maxZ=ak.min(vertices_z)
+    else:
+        maxZ=ak.max(vertices_z)
+    return abs(maxZ)
+
+
