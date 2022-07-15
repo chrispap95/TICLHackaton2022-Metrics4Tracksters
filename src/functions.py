@@ -227,6 +227,17 @@ def nXCentralityKatz(nodes,edges,isDirected=False):
     centr_np = np.array(list(centr_d.items()))
     return centr_np[centr_np[:, 0].argsort()][:,1]
 
+def nXCentralityPageRank(nodes,edges,isDirected=False):
+    if(isDirected):
+        G=nx.DiGraph()
+    else:
+        G=nx.Graph()
+    G.add_edges_from(ak.to_numpy(edges))
+    G.add_nodes_from(ak.to_numpy(nodes))
+    centr_d = nx.pagerank(G,0.85)
+    centr_np = np.array(list(centr_d.items()))
+    return centr_np[centr_np[:, 0].argsort()][:,1]
+
 def longestPathSource(nodes,edges,centralities,isDirected=False):
     """
     Finds the longest path in the network from the max
@@ -295,16 +306,16 @@ def plotTrackster(fig, ax, x, y, z, heatmap=None, indexes=None, edges=None, labe
     plt.show()
 
 
-def incompleteTracksters2(vertices_layer,seed1=None,seed2=None):
+def incompleteTracksters(vertices_layer,mean,std,seed1=None,seed2=None):
     v_layer=ak.to_numpy(vertices_layer)
     n=len(vertices_layer)
     #print(n)
     if(seed1!=None):
         np.random.seed(seed1)
-    q1=np.random.normal(0.18,0.02)
+    q1=np.random.normal(mean,std)
     if(seed2!=None):
         np.random.seed(seed2)
-    q2=np.random.normal(0.18,0.02)
+    q2=np.random.normal(mean,std)
     return slice(int(n*q1),int(n*(1-q2)))
 
 def ld(vertices_z,vertices_E):
@@ -315,6 +326,23 @@ def ld(vertices_z,vertices_E):
     
     ldVal=sum((vertices_z+offset)*vertices_E)
     return ldVal
+
+def delta_Eta(vertices_y,vertices_z,barycenter_eta):
+    theta=np.arctan(vertices_z/vertices_y)
+    eta=-np.log(np.tan(theta/2))
+    
+    return eta-barycenter_eta
+
+def delta_phi(vertices_x,vertices_y,barycenter_phi):
+    phi=np.tan(vertices_y/vertices_x)
+    
+    return phi-barycenter_phi
+
+def delta_eta_phi(vertices_x,vertices_y,vertices_z,barycenter_eta,barycenter_phi):
+    deltaPhi=delta_phi(vertices_x,vertices_y,barycenter_phi)
+    deltaEta=delta_Eta(vertices_y,vertices_z,barycenter_eta)
+    
+    return np.sqrt(deltaPhi**2+deltaEta**2)
 
 def delta_RT(vertices_x,vertices_y,vertices_E,Eweighted=False):
     argmax_E=ak.argmax(vertices_E)
