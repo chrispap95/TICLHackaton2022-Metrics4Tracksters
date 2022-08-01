@@ -146,7 +146,7 @@ class Network:
             print(vecr)
         c_eig_real=c_eig.real
         norm=np.linalg.norm(c_eig_real)
-        return c_eig_real/norm
+        return c_eig_real/sum(c_eig_real)
 
     def centralityKatz(self,nodes,edges,isDirected=False,printStuff=False):
         adj=self.adjM(nodes,edges,isDirected)
@@ -161,7 +161,7 @@ class Network:
             print(vecr)
         c_katz_real=c_katz.real
         norm=np.linalg.norm(c_katz_real)
-        return c_katz_real/norm
+        return c_katz_real/sum(c_katz_real)
 
     def centralityPageRank(self,nodes,edges,df,isDirected=False,printStuff=False):
         adj=self.adjM(nodes,edges,isDirected)
@@ -178,7 +178,7 @@ class Network:
             print(vecr)
         c_pr_real=c_pr.real
         norm=np.linalg.norm(c_pr_real)
-        return c_pr_real/norm
+        return c_pr_real/sum(c_pr_real)
 
     def nXCentralityEigen(self,nodes,edges,isDirected=False):
         if(isDirected):
@@ -199,6 +199,17 @@ class Network:
         G.add_edges_from(ak.to_numpy(edges))
         G.add_nodes_from(ak.to_numpy(nodes))
         centr_d = nx.katz_centrality_numpy(G)
+        centr_np = np.array(list(centr_d.items()))
+        return centr_np[centr_np[:, 0].argsort()][:,1]
+
+    def nXCentralityPageRank(self,nodes,edges,isDirected=False):
+        if(isDirected):
+            G=nx.DiGraph()
+        else:
+            G=nx.Graph()
+        G.add_edges_from(ak.to_numpy(edges))
+        G.add_nodes_from(ak.to_numpy(nodes))
+        centr_d = nx.pagerank(G,0.85)
         centr_np = np.array(list(centr_d.items()))
         return centr_np[centr_np[:, 0].argsort()][:,1]
 
@@ -353,5 +364,52 @@ class Network:
         else:
             maxZ=ak.max(self.z)
         return abs(maxZ)
+    
+    
+    def centralityProfIter(self,neighborsList,centrality,adjMatrix):
+        for i in range(len(neighborsList)):
+            if(neighborsList[i]==0):
+                continue
+            if(i in self.doneList):
+                continue
+            else:
+                #print(centrality)
+                self.sumCen+=centrality[i]
+                self.n+=1
+                self.doneList.append(i)
+                self.nextList.append(adjMatrix[i,:])
+                #print(nextList)
 
+    def centralityProf(self,adjMatrix,centrality):
+        self.doneList=[]
+        self.nextList=[]
+        cenProfList=[max(centrality)]
+        i_cen_max=np.argmax(centrality)
+        firstList=adjMatrix[i_cen_max]
+        self.sumCen=0
+        self.n=0
+        self.centralityProfIter(firstList,centrality,adjMatrix)
+        cenProfList.append(self.sumCen/self.n)
+        #print(firstList)
+        #nextList=adjMatrix[firstList==1.]
+        #print(nextList)
+        while(len(self.doneList)<adjMatrix.shape[0]):
+            loopList=self.nextList
+            self.nextList=[]
+            #print(j)
+            self.sumCen=0
+            self.n=0
+            for i in loopList:
+                #print("loopList= {}".format(loopList))
+                #print("i= {}".format(i))
+                self.centralityProfIter(i,centrality,adjMatrix)
+                #print("doneList= {}".format(self.doneList))
+                #print(i==1.)
+
+            if self.n!=0:
+                cenProfList.append(self.sumCen/self.n)
+            #print(loopList==1.)
+            #nextList=adjMatrix[loopList==1.]
+            
+        return cenProfList
 
