@@ -202,14 +202,14 @@ class Network:
         centr_np = np.array(list(centr_d.items()))
         return centr_np[centr_np[:, 0].argsort()][:,1]
 
-    def nXCentralityPageRank(self,nodes,edges,isDirected=False):
+    def nXCentralityPageRank(self,nodes,edges,df,isDirected=False):
         if(isDirected):
             G=nx.DiGraph()
         else:
             G=nx.Graph()
         G.add_edges_from(ak.to_numpy(edges))
         G.add_nodes_from(ak.to_numpy(nodes))
-        centr_d = nx.pagerank(G,0.85)
+        centr_d = nx.pagerank(G,df)
         centr_np = np.array(list(centr_d.items()))
         return centr_np[centr_np[:, 0].argsort()][:,1]
 
