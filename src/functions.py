@@ -171,7 +171,7 @@ def centralityEigen(nodes,edges,isDirected=False,printStuff=False):
         print(vecr)
     c_eig_real=c_eig.real
     norm=np.linalg.norm(c_eig_real)
-    return c_eig_real/norm
+    return c_eig_real/sum(c_eig_real)
 
 def centralityKatz(nodes,edges,isDirected=False,printStuff=False):
     adj=adjM(nodes,edges,isDirected)
@@ -186,7 +186,7 @@ def centralityKatz(nodes,edges,isDirected=False,printStuff=False):
         print(vecr)
     c_katz_real=c_katz.real
     norm=np.linalg.norm(c_katz_real)
-    return c_katz_real/norm
+    return c_katz_real/sum(c_katz_real)
     
 def centralityPageRank(nodes,edges,df,isDirected=False,printStuff=False):
     adj=adjM(nodes,edges,isDirected)
@@ -203,7 +203,7 @@ def centralityPageRank(nodes,edges,df,isDirected=False,printStuff=False):
         print(vecr)
     c_pr_real=c_pr.real
     norm=np.linalg.norm(c_pr_real)
-    return c_pr_real/norm
+    return c_pr_real/sum(c_pr_real)
 
 def nXCentralityEigen(nodes,edges,isDirected=False):
     if(isDirected):
@@ -225,7 +225,8 @@ def nXCentralityKatz(nodes,edges,isDirected=False):
     G.add_nodes_from(ak.to_numpy(nodes))
     centr_d = nx.katz_centrality_numpy(G)
     centr_np = np.array(list(centr_d.items()))
-    return centr_np[centr_np[:, 0].argsort()][:,1]
+    centr_f= centr_np[centr_np[:, 0].argsort()][:,1]
+    return centr_f/sum(centr_f)
 
 def nXCentralityPageRank(nodes,edges,isDirected=False):
     if(isDirected):
@@ -236,7 +237,8 @@ def nXCentralityPageRank(nodes,edges,isDirected=False):
     G.add_nodes_from(ak.to_numpy(nodes))
     centr_d = nx.pagerank(G,0.85)
     centr_np = np.array(list(centr_d.items()))
-    return centr_np[centr_np[:, 0].argsort()][:,1]
+    centr_f= centr_np[centr_np[:, 0].argsort()][:,1]
+    return centr_f/sum(centr_f)
 
 def longestPathSource(nodes,edges,centralities,isDirected=False):
     """
@@ -342,7 +344,7 @@ def delta_eta_phi(vertices_x,vertices_y,vertices_z,barycenter_eta,barycenter_phi
     deltaPhi=delta_phi(vertices_x,vertices_y,barycenter_phi)
     deltaEta=delta_Eta(vertices_y,vertices_z,barycenter_eta)
     
-    return np.sqrt(deltaPhi**2+deltaEta**2)
+    return np.mean(np.sqrt(deltaPhi**2+deltaEta**2))
 
 def delta_RT(vertices_x,vertices_y,vertices_E,Eweighted=False):
     argmax_E=ak.argmax(vertices_E)

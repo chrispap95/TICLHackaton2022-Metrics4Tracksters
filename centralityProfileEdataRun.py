@@ -104,6 +104,9 @@ for tr in range(N):
 	comCenProfArray.append(cenProfList)
 	comNVerticesList.append(len(v_ind))
 
+with open(options.output,"wb") as f:
+	pickle.dump(comCenProfArray, f)
+	pickle.dump(comNVerticesList, f)
 
 incCenProfArray=[]
 incNVerticesList=[]
@@ -136,9 +139,7 @@ for tr in range(N):
 	incNVerticesList.append(len(v_ind_inc))
 
 
-with open(options.output,"wb") as f:
-	pickle.dump(comCenProfArray, f)
-	pickle.dump(comNVerticesList, f)
+with open(options.output,"ab") as f:
 	
 	pickle.dump(incCenProfArray, f)
 	pickle.dump(incNVerticesList, f)

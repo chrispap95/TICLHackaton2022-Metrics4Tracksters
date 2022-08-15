@@ -1,8 +1,8 @@
 universe = vanilla
-Executable = condor-exec_Edata.sh
+Executable = condor-exec.sh
 Should_Transfer_Files = YES
 WhenToTransferOutput = ON_EXIT
-Transfer_Input_Files = condor-exec_Edata.sh
+Transfer_Input_Files = condor-exec.sh
 Arguments = $(Cluster) $(Process)
 Output = log/testCenProf_$(Cluster)_$(Process).stdout
 Error = log/testCenProf_$(Cluster)_$(Process).stderr

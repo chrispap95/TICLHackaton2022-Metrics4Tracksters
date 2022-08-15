@@ -187,7 +187,7 @@ class Network:
             G=nx.Graph()
         G.add_edges_from(ak.to_numpy(edges),weights=self.weights)
         G.add_nodes_from(ak.to_numpy(nodes),weights=self.weights)
-        centr_d = nx.eigenvector_centrality_numpy(G)
+        centr_d = nx.eigenvector_centrality(G)
         centr_np = np.array(list(centr_d.items()))
         return centr_np[centr_np[:, 0].argsort()][:,1]
 
@@ -200,7 +200,8 @@ class Network:
         G.add_nodes_from(ak.to_numpy(nodes))
         centr_d = nx.katz_centrality_numpy(G)
         centr_np = np.array(list(centr_d.items()))
-        return centr_np[centr_np[:, 0].argsort()][:,1]
+        centr_f= centr_np[centr_np[:, 0].argsort()][:,1]
+        return centr_f/sum(centr_f)
 
     def nXCentralityPageRank(self,nodes,edges,df,isDirected=False):
         if(isDirected):
@@ -211,7 +212,8 @@ class Network:
         G.add_nodes_from(ak.to_numpy(nodes))
         centr_d = nx.pagerank(G,df)
         centr_np = np.array(list(centr_d.items()))
-        return centr_np[centr_np[:, 0].argsort()][:,1]
+        centr_f= centr_np[centr_np[:, 0].argsort()][:,1]
+        return centr_f/sum(centr_f)
 
     def longestPathSource(self,nodes,edges,centralities,isDirected=False):
         """
@@ -413,3 +415,42 @@ class Network:
             
         return cenProfList
 
+    def energyProfIter(self,neighborsList,adjMatrix):
+        for i in range(len(neighborsList)):
+            if(neighborsList[i]==0):
+                continue
+            if(i in self.doneList):
+                continue
+            else:
+                self.sumE+=self.E[i]/sum(self.E)
+                self.n+=1
+                self.doneList.append(i)
+                #print(adjMatrix[i,:])
+                self.nextList.append(adjMatrix[i,:])
+
+    
+    def energyProf(self,adjMatrix):
+        self.nextList=[]
+        energyProfList=[max(self.E)/sum(self.E)]
+        i_E_max=np.argmax(self.E)
+        self.doneList=[i_E_max]
+        firstList=adjMatrix[i_E_max]
+        self.sumE=0
+        self.n=0
+        self.energyProfIter(firstList,adjMatrix)
+        energyProfList.append(self.sumE/self.n)
+        while(len(self.doneList)<adjMatrix.shape[0]):
+            loopList=self.nextList
+            self.nextList=[]
+            #print(j)
+            self.sumE=0
+            self.n=0
+            for i in loopList:
+                self.energyProfIter(i,adjMatrix)
+
+            if self.n!=0:
+                energyProfList.append(self.sumE/self.n)
+            #print(loopList==1.)
+            #nextList=adjMatrix[loopList==1.]
+            
+        return energyProfList

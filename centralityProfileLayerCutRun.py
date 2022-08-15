@@ -35,15 +35,15 @@ nEdg=options.nEdg
 optCen=options.centrality
 isDirected=options.isDirected
 
-#filenameFull100GeV="/eos/user/c/chpapage/TICL_samples/CloseByDoubleGamma_E100Eta1p62Delta5_CMSSW_12_4_0_upgrade2026_D86_clue3Dv4_ntuples/220701_225928/0000/ntuples.root"
+filenameFull100GeV="/eos/user/c/chpapage/TICL_samples/CloseByDoubleGamma_E100Eta1p62Delta5_CMSSW_12_4_0_upgrade2026_D86_clue3Dv4_ntuples/220701_225928/0000/ntuples.root"
 filenameFull50GeV="root://eosuser.cern.ch//eos/user/c/chpapage/TICL_samples/CloseByDoubleGamma_E50Eta1p62Delta5_CMSSW_12_4_0_upgrade2026_D86_clue3Dv4_ntuples/220701_225808/0000/ntuples.root"
-filenameFull25GeV="root://eosuser.cern.ch//eos/user/c/chpapage/TICL_samples/CloseByDoubleGamma_E25Eta1p62Delta5_CMSSW_12_4_0_upgrade2026_D86_clue3Dv4_ntuples/220701_225704/0000/ntuples.root"
+#filenameFull25GeV="root://eosuser.cern.ch//eos/user/c/chpapage/TICL_samples/CloseByDoubleGamma_E25Eta1p62Delta5_CMSSW_12_4_0_upgrade2026_D86_clue3Dv4_ntuples/220701_225704/0000/ntuples.root"
 #folder="CloseByDoubleGamma_E50IncVsE25Com_Eta1p62Delta5_CMSSW_12_4_0_upgrade2026_D86_clue3Dv4"
 #savefigs=False
 #file = uproot.open(filename)
 #fileFull=uproot.concatenate(filename)
 fileCom=uproot.open(filenameFull50GeV)
-fileInc=uproot.open(filenameFull25GeV)
+fileInc=uproot.open(filenameFull100GeV)
 #datasetName="50 GeV data inc(layerCut) vs 25 GeV data com"
 
 tracksters=fileCom["ana/tracksters"]
@@ -87,6 +87,8 @@ for evt in range(N):
 		elif(optCen=="c_pr"):
 			centrality=TrNet.nXCentralityPageRank(v_ind,edges_1,0.85,isDirected)
 		elif(optCen=="c_nxeigen"):
+			if(len(v_ind)<3):
+				continue
 			centrality=TrNet.nXCentralityEigen(v_ind,edges_1,isDirected)
 			
 		adjMatrix=TrNet.adjM(v_ind,edges_1)
@@ -95,6 +97,12 @@ for evt in range(N):
 		comCenProfArray.append(cenProfList)
 		comNVerticesList.append(len(v_ind))
 
+with open(options.output,"wb") as f:
+	pickle.dump(comCenProfArray, f)
+	pickle.dump(comNVerticesList, f)
+
+del comCenProfArray
+del comNVerticesList
 
 incCenProfArray=[]
 incNVerticesList=[]
@@ -102,7 +110,8 @@ incNVerticesList=[]
 for evt in range(N):
 	print(evt)
 	for tr in range(min(len(vertices_indexes_inc[evt]),2)):
-		
+		if(evt==121 and tr==1):
+			continue
 		incSlice=fn.incompleteTracksters(vertices_layers_inc[evt,tr],0.31,0.05)
 		v_ind_inc=vertices_indexes_inc[evt,tr][incSlice]
 		v_x_inc=vertices_x_inc[evt,tr][incSlice]
@@ -122,6 +131,8 @@ for evt in range(N):
 		elif(optCen=="c_pr"):
 			centrality=TrNet.nXCentralityPageRank(v_ind_inc,edges_1,0.85,isDirected)
 		elif(optCen=="c_nxeigen"):
+			if(len(v_ind_inc)<3):
+				continue
 			centrality=TrNet.nXCentralityEigen(v_ind_inc,edges_1,isDirected)
 			
 		adjMatrix=TrNet.adjM(v_ind_inc,edges_1)
@@ -131,10 +142,7 @@ for evt in range(N):
 		incNVerticesList.append(len(v_ind_inc))
 
 
-with open(options.output,"wb") as f:
-	pickle.dump(comCenProfArray, f)
-	pickle.dump(comNVerticesList, f)
-	
+with open(options.output,"ab") as f:
 	pickle.dump(incCenProfArray, f)
 	pickle.dump(incNVerticesList, f)
 	
